@@ -76,6 +76,7 @@ import {mergeMapTo} from './operator/mergeMapTo';
 import {multicast} from './operator/multicast';
 import {observeOn} from './operator/observeOn';
 import {partition} from './operator/partition';
+import {pluck} from './operator/pluck';
 import {publish} from './operator/publish';
 import {publishBehavior} from './operator/publishBehavior';
 import {publishReplay} from './operator/publishReplay';
@@ -297,6 +298,7 @@ export class Observable<T> implements CoreOperators<T>  {
   multicast: multicast<T>;
   observeOn: observeOn<T>;
   partition: partition<T>;
+  pluck: typeof pluck;
   publish: publish<T>;
   publishBehavior: publishBehavior<T>;
   publishReplay: publishReplay<T>;
