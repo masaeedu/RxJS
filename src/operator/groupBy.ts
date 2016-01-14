@@ -8,17 +8,28 @@ import {RefCountSubscription, GroupedObservable} from './groupBy-support';
 import {tryCatch} from '../util/tryCatch';
 import {errorObject} from '../util/errorObject';
 
-export function groupBy<T, K, R>(keySelector: (value: T) => K,
-                                 elementSelector?: (value: T) => R,
-                                 durationSelector?: (grouped: GroupedObservable<K, R>) => Observable<any>): GroupByObservable<T, K, R> {
-  return new GroupByObservable(this, keySelector, elementSelector, durationSelector);
+export type Projection<T, U> = (value: T) => U;
+export type DurationSelector<K, R> = Projection<GroupedObservable<K, R>, Observable<any>>;
+
+export interface groupBy<T> {
+  <K>(keySelector: Projection<T, K>): Observable<GroupedObservable<K, T>>;
+  <K>(keySelector: Projection<T, K>, durationSelector: DurationSelector<K, T>): Observable<GroupedObservable<K, T>>;
+  <K, R>(keySelector: Projection<T, K>, elementSelector: Projection<T, R>): Observable<GroupedObservable<K, R>>;
+  <K, R>(keySelector: Projection<T, K>, elementSelector: Projection<T, R>, durationSelector: DurationSelector<K, R>): Observable<GroupedObservable<K, R>>;
 }
 
-export class GroupByObservable<T, K, R> extends Observable<GroupedObservable<K, R>> {
+export function groupBy<T, K, R>(keySelector: (value: T) => K,
+                                 elementSelector?: (value: T) => R,
+                                 durationSelector?: (grouped: GroupedObservable<K, T | R>) => Observable<any>): GroupByObservable<T, K, R> {
+  let _this: Observable<T> = this;
+  return new GroupByObservable(_this, keySelector, elementSelector, durationSelector);
+}
+
+export class GroupByObservable<T, K, R> extends Observable<GroupedObservable<K, T | R>> {
   constructor(public source: Observable<T>,
               private keySelector: (value: T) => K,
               private elementSelector?: (value: T) => R,
-              private durationSelector?: (grouped: GroupedObservable<K, R>) => Observable<any>) {
+              private durationSelector?: (grouped: GroupedObservable<K, T | R>) => Observable<any>) {
     super();
   }
 

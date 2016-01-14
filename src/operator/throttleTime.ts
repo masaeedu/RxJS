@@ -5,8 +5,13 @@ import {Subscription} from '../Subscription';
 import {asap} from '../scheduler/asap';
 import {Observable} from '../Observable';
 
+export interface throttleTime<T> {
+  (delay: number, scheduler?: Scheduler): Observable<T>;
+}
+
 export function throttleTime<T>(delay: number, scheduler: Scheduler = asap): Observable<T> {
-  return this.lift(new ThrottleTimeOperator(delay, scheduler));
+  let _this: Observable<T> = this;
+  return _this.lift(new ThrottleTimeOperator<T>(delay, scheduler));
 }
 
 class ThrottleTimeOperator<T> implements Operator<T, T> {

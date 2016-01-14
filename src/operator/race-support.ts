@@ -6,8 +6,8 @@ import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
 
 export class RaceOperator<T, R> implements Operator<T, R> {
-  call(subscriber: Subscriber<T>): Subscriber<T> {
-    return new RaceSubscriber(subscriber);
+  call(subscriber: Subscriber<R>): Subscriber<T> {
+    return new RaceSubscriber<T, R>(subscriber);
   }
 }
 
@@ -16,7 +16,7 @@ export class RaceSubscriber<T, R> extends OuterSubscriber<T, R> {
   private observables: Observable<any>[] = [];
   private subscriptions: Subscription[] = [];
 
-  constructor(destination: Subscriber<T>) {
+  constructor(destination: Subscriber<R>) {
     super(destination);
   }
 

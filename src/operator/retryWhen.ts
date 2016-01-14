@@ -9,8 +9,13 @@ import {errorObject} from '../util/errorObject';
 import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
 
+export interface retryWhen<T> {
+  (notifier: (errors: Observable<any>) => Observable<any>): Observable<T>;
+}
+
 export function retryWhen<T>(notifier: (errors: Observable<any>) => Observable<any>): Observable<T> {
-  return this.lift(new RetryWhenOperator(notifier, this));
+  let _this: Observable<T> = this;
+  return _this.lift(new RetryWhenOperator(notifier, _this));
 }
 
 class RetryWhenOperator<T> implements Operator<T, T> {

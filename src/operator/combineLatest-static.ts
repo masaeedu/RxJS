@@ -3,7 +3,19 @@ import {ArrayObservable} from '../observable/fromArray';
 import {CombineLatestOperator} from './combineLatest-support';
 import {Scheduler} from '../Scheduler';
 import {isScheduler} from '../util/isScheduler';
+import {isFunction} from '../util/isFunction';
 import {isArray} from '../util/isArray';
+
+export type Projection<U, R> = (...values: U[]) => R;
+
+export interface combineLatest {
+  <U>(observables: Observable<U>[]): Observable<U[]>;
+  // <U>(observables: Observable<U>[], scheduler: Scheduler): Observable<U[]>; // Too cumbersome to check
+  <U, R>(observables: Observable<U>[], project: Projection<U, R>): Observable<R>;
+  <U, R>(observables: Observable<U>[], project: Projection<U, R>, scheduler: Scheduler): Observable<R>;
+  // TODO: Expand and reify
+  <U, R>(...args: (Observable<U> | Projection<U, R> | Scheduler)[]): Observable<R>
+}
 
 /**
  * Combines the values from observables passed as arguments. This is done by subscribing
@@ -15,26 +27,31 @@ import {isArray} from '../util/isArray';
  * @returns {Observable} an observable of other projected values from the most recent values from each observable, or an array of each of
  * the most recent values from each observable.
  */
-export function combineLatest<T, R>(...observables: Array<any | Observable<any> |
-                                                    Array<Observable<any>> |
-                                                    (((...values: Array<any>) => R)) |
-                                                    Scheduler>): Observable<R> {
+export function combineLatest<U, R>(first: Observable<U>[] | Observable<U>, ...args: (Observable<U> | Projection<U, R> | Scheduler)[]): Observable<U[]> | Observable<R> {
   let project: (...values: Array<any>) => R =  null;
   let scheduler: Scheduler = null;
+  let observables: Observable<U>[];
 
-  if (isScheduler(observables[observables.length - 1])) {
-    scheduler = <Scheduler>observables.pop();
+  let last = args[args.length - 1];
+  if (isScheduler(last)) {
+    scheduler = last;
+    args.pop();
   }
-
-  if (typeof observables[observables.length - 1] === 'function') {
-    project = <(...values: Array<any>) => R>observables.pop();
+  
+  last = args[args.length - 1];
+  if (isFunction(last)) {
+    project = last;
+    args.pop();
   }
 
   // if the first and only other argument besides the resultSelector is an array
   // assume it's been called with `combineLatest([obs1, obs2, obs3], project)`
-  if (observables.length === 1 && isArray(observables[0])) {
-    observables = <Array<Observable<any>>>observables[0];
+  if (!args.length && isArray(first)) {
+    observables = first;
+  } else {
+    observables = <any>args;
+    observables.unshift(<any>first);
   }
 
-  return new ArrayObservable(observables, scheduler).lift<T, R>(new CombineLatestOperator<T, R>(project));
+  return new ArrayObservable(observables, scheduler).lift(new CombineLatestOperator<Observable<U>, U, R>(project));
 }

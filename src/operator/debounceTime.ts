@@ -5,6 +5,10 @@ import {Scheduler} from '../Scheduler';
 import {Subscription} from '../Subscription';
 import {asap} from '../scheduler/asap';
 
+export interface debounceTime<T> {
+  (dueTime: number, scheduler: Scheduler): Observable<T>;
+}
+
 /**
  * Returns the source Observable delayed by the computed debounce duration,
  * with the duration lengthened if a new source item arrives before the delay
@@ -18,7 +22,8 @@ import {asap} from '../scheduler/asap';
  * @returns {Observable} an Observable the same as source Observable, but drops items.
  */
 export function debounceTime<T>(dueTime: number, scheduler: Scheduler = asap): Observable<T> {
-  return this.lift(new DebounceTimeOperator(dueTime, scheduler));
+  let _this: Observable<T> = this;
+  return _this.lift(new DebounceTimeOperator<T>(dueTime, scheduler));
 }
 
 class DebounceTimeOperator<T> implements Operator<T, T> {

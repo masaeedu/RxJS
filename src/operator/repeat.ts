@@ -3,13 +3,18 @@ import {Subscriber} from '../Subscriber';
 import {Observable} from '../Observable';
 import {EmptyObservable} from '../observable/empty';
 
+export interface repeat<T> {
+  (count?: number): Observable<T>;
+}
+
 export function repeat<T>(count: number = -1): Observable<T> {
+  let _this: Observable<T> = this;
   if (count === 0) {
     return new EmptyObservable<T>();
   } else if (count < 0) {
-    return this.lift(new RepeatOperator(-1, this));
+    return _this.lift(new RepeatOperator(-1, _this));
   } else {
-    return this.lift(new RepeatOperator(count - 1, this));
+    return _this.lift(new RepeatOperator(count - 1, _this));
   }
 }
 

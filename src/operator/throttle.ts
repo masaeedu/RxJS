@@ -8,8 +8,13 @@ import {errorObject} from '../util/errorObject';
 import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
 
+export interface throttle<T> {
+  (durationSelector: (value: T) => Observable<number> | Promise<number>): Observable<T>;
+}
+
 export function throttle<T>(durationSelector: (value: T) => Observable<number> | Promise<number>): Observable<T> {
-  return this.lift(new ThrottleOperator(durationSelector));
+  let _this: Observable<T> = this;
+  return _this.lift(new ThrottleOperator(durationSelector));
 }
 
 class ThrottleOperator<T> implements Operator<T, T> {

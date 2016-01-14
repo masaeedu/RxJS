@@ -2,17 +2,22 @@ import {Operator} from '../Operator';
 import {Subscriber} from '../Subscriber';
 import {Observable} from '../Observable';
 
-export function isEmpty(): Observable<boolean> {
-  return this.lift(new IsEmptyOperator());
+export interface isEmpty<T> {
+  (): Observable<boolean>;
 }
 
-class IsEmptyOperator<T> implements Operator<boolean, boolean> {
-  call (observer: Subscriber<T>): Subscriber<boolean> {
-    return new IsEmptySubscriber(observer);
+export function isEmpty<T>(): Observable<boolean> {
+  let _this: Observable<T> = this;
+  return _this.lift(new IsEmptyOperator<T>());
+}
+
+class IsEmptyOperator<T> implements Operator<T, boolean> {
+  call (observer: Subscriber<boolean>): Subscriber<T> {
+    return new IsEmptySubscriber<T>(observer);
   }
 }
 
-class IsEmptySubscriber extends Subscriber<boolean> {
+class IsEmptySubscriber<T> extends Subscriber<T> {
 
   constructor(destination: Subscriber<any>) {
     super(destination);
@@ -25,7 +30,7 @@ class IsEmptySubscriber extends Subscriber<boolean> {
     destination.complete();
   }
 
-  protected _next(value: boolean) {
+  protected _next(value: T) {
     this.notifyComplete(false);
   }
 

@@ -7,6 +7,10 @@ import {tryCatch} from '../util/tryCatch';
 import {errorObject} from '../util/errorObject';
 import {Observable} from '../Observable';
 
+export interface _do<T> {
+  (nextOrObserver?: Observer<T> | ((x: T) => void), error?: (e: any) => void, complete?: () => void): Observable<T>;
+}
+
 /**
  * Returns a mirrored Observable of the source Observable, but modified so that the provided Observer is called
  * for every item emitted by the source.
@@ -17,6 +21,7 @@ import {Observable} from '../Observable';
  * @reurns {Observable} a mirrored Observable with the specified Observer or callback attached for each item.
  */
 export function _do<T>(nextOrObserver?: Observer<T> | ((x: T) => void), error?: (e: any) => void, complete?: () => void): Observable<T> {
+  let _this: Observable<T> = this;
   let next: (x: T) => void;
   if (nextOrObserver && typeof nextOrObserver === 'object') {
     next = (<Observer<T>>nextOrObserver).next;
@@ -25,7 +30,7 @@ export function _do<T>(nextOrObserver?: Observer<T> | ((x: T) => void), error?: 
   } else {
     next = <(x: T) => void>nextOrObserver;
   }
-  return this.lift(new DoOperator(next || noop, error || noop, complete || noop));
+  return _this.lift(new DoOperator(next || noop, error || noop, complete || noop));
 }
 
 class DoOperator<T> implements Operator<T, T> {

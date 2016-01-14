@@ -5,6 +5,10 @@ import {Scheduler} from '../Scheduler';
 import {Action} from '../scheduler/Action';
 import {asap} from '../scheduler/asap';
 
+export interface bufferTime<T> {
+  (bufferTimeSpan: number, bufferCreationInterval: number, scheduler: Scheduler): Observable<T[]>
+}
+
 /**
  * Buffers values from the source for a specific time period. Optionally allows
  * new buffers to be set up at an interval.
@@ -23,7 +27,8 @@ import {asap} from '../scheduler/asap';
 export function bufferTime<T>(bufferTimeSpan: number,
                               bufferCreationInterval: number = null,
                               scheduler: Scheduler = asap): Observable<T[]> {
-  return this.lift(new BufferTimeOperator(bufferTimeSpan, bufferCreationInterval, scheduler));
+  let _this: Observable<T> = this;
+  return _this.lift(new BufferTimeOperator<T>(bufferTimeSpan, bufferCreationInterval, scheduler));
 }
 
 class BufferTimeOperator<T> implements Operator<T, T[]> {

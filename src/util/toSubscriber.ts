@@ -13,7 +13,7 @@ export function toSubscriber<T>(
     } else if (typeof next[rxSubscriber] === 'function') {
       return next[rxSubscriber]();
     } else {
-      return new Subscriber(<Observer<T>> next);
+      return new Subscriber<T>(<Observer<T>> next);
     }
   }
 

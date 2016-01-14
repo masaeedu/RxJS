@@ -8,29 +8,32 @@ import {isDate} from '../util/isDate';
 import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
 
+export interface timeoutWith<T> {
+  <R>(due: number | Date, withObservable?: Observable<R>, scheduler?: Scheduler): Observable<T | R>;
+}
+
 export function timeoutWith<T, R>(due: number | Date,
                                   withObservable: Observable<R>,
                                   scheduler: Scheduler = asap): Observable<T | R> {
+  let _this: Observable<T> = this;
   let absoluteTimeout = isDate(due);
   let waitFor = absoluteTimeout ? (+due - scheduler.now()) : Math.abs(<number>due);
-  return this.lift(new TimeoutWithOperator(waitFor, absoluteTimeout, withObservable, scheduler));
+  return _this.lift(new TimeoutWithOperator<T, R>(waitFor, absoluteTimeout, withObservable, scheduler));
 }
 
-class TimeoutWithOperator<T> implements Operator<T, T> {
+class TimeoutWithOperator<T, R> implements Operator<T, T | R> {
   constructor(private waitFor: number,
               private absoluteTimeout: boolean,
               private withObservable: Observable<any>,
               private scheduler: Scheduler) {
   }
 
-  call(subscriber: Subscriber<T>) {
-    return new TimeoutWithSubscriber(
-      subscriber, this.absoluteTimeout, this.waitFor, this.withObservable, this.scheduler
-    );
+  call(subscriber: Subscriber<T | R>): Subscriber<T> {
+    return new TimeoutWithSubscriber<T, T | R>(subscriber, this.absoluteTimeout, this.waitFor, this.withObservable, this.scheduler);
   }
 }
 
-class TimeoutWithSubscriber<T, R> extends OuterSubscriber<T, R> {
+class TimeoutWithSubscriber<T, R> extends OuterSubscriber<T, T | R> {
   private timeoutSubscription: Subscription = undefined;
   private index: number = 0;
   private _previousIndex: number = 0;
@@ -42,7 +45,7 @@ class TimeoutWithSubscriber<T, R> extends OuterSubscriber<T, R> {
     return this._hasCompleted;
   }
 
-  constructor(public destination: Subscriber<T>,
+  constructor(public destination: Subscriber<T | R>,
               private absoluteTimeout: boolean,
               private waitFor: number,
               private withObservable: Observable<any>,

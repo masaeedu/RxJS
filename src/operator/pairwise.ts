@@ -2,6 +2,10 @@ import {Operator} from '../Operator';
 import {Observable} from '../Observable';
 import {Subscriber} from '../Subscriber';
 
+export interface pairwise<T> {
+  (): Observable<T>;
+}
+
 /**
  * Returns a new observable that triggers on the second and following inputs.
  * An input that triggers an event will return an pair of [(N - 1)th, Nth].
@@ -9,10 +13,11 @@ import {Subscriber} from '../Subscriber';
  * @returns {Observable<R>} an observable of pairs of values.
  */
 export function pairwise<T>(): Observable<T> {
-  return this.lift(new PairwiseOperator());
+  let _this: Observable<T> = this;
+  return _this.lift(new PairwiseOperator<T>());
 }
 
-class PairwiseOperator<T, R> implements Operator<T, R> {
+class PairwiseOperator<T> implements Operator<T, T> {
   call(subscriber: Subscriber<T>): Subscriber<T> {
     return new PairwiseSubscriber(subscriber);
   }

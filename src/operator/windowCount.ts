@@ -3,9 +3,14 @@ import {Subscriber} from '../Subscriber';
 import {Observable} from '../Observable';
 import {Subject} from '../Subject';
 
+export interface windowCount<T> {
+  (windowSize: number, startWindowEvery?: number): Observable<Observable<T>>;
+}
+
 export function windowCount<T>(windowSize: number,
                                startWindowEvery: number = 0): Observable<Observable<T>> {
-  return this.lift(new WindowCountOperator(windowSize, startWindowEvery));
+  let _this: Observable<T> = this;
+  return _this.lift(new WindowCountOperator<T>(windowSize, startWindowEvery));
 }
 
 class WindowCountOperator<T> implements Operator<T, Observable<T>> {

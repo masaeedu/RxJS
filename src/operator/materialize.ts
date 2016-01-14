@@ -3,8 +3,13 @@ import {Observable} from '../Observable';
 import {Subscriber} from '../Subscriber';
 import {Notification} from '../Notification';
 
+export interface materialize<T> {
+  (): Observable<Notification<T>>;
+}
+
 export function materialize<T>(): Observable<Notification<T>> {
-  return this.lift(new MaterializeOperator());
+  let _this: Observable<T> = this;;
+  return _this.lift(new MaterializeOperator<T>());
 }
 
 class MaterializeOperator<T> implements Operator<T, Notification<T>> {

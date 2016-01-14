@@ -6,10 +6,15 @@ import {Scheduler} from '../Scheduler';
 import {Action} from '../scheduler/Action';
 import {asap} from '../scheduler/asap';
 
+export interface windowTime<T> {
+  (windowTimeSpan: number, windowCreationInterval?: number, scheduler?: Scheduler): Observable<Observable<T>>;
+}
+
 export function windowTime<T>(windowTimeSpan: number,
                               windowCreationInterval: number = null,
                               scheduler: Scheduler = asap): Observable<Observable<T>> {
-  return this.lift(new WindowTimeOperator(windowTimeSpan, windowCreationInterval, scheduler));
+  let _this: Observable<T> = this;
+  return _this.lift(new WindowTimeOperator<T>(windowTimeSpan, windowCreationInterval, scheduler));
 }
 
 class WindowTimeOperator<T> implements Operator<T, Observable<T>> {

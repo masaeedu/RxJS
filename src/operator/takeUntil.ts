@@ -5,8 +5,13 @@ import {Subscriber} from '../Subscriber';
 import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
 
+export interface takeUntil<T> {
+  (notifier: Observable<any>): Observable<T>;
+}
+
 export function takeUntil<T>(notifier: Observable<any>): Observable<T> {
-  return this.lift(new TakeUntilOperator(notifier));
+  let _this: Observable<T> = this;
+  return _this.lift(new TakeUntilOperator<T>(notifier));
 }
 
 class TakeUntilOperator<T> implements Operator<T, T> {
@@ -14,7 +19,7 @@ class TakeUntilOperator<T> implements Operator<T, T> {
   }
 
   call(subscriber: Subscriber<T>): Subscriber<T> {
-    return new TakeUntilSubscriber(subscriber, this.notifier);
+    return new TakeUntilSubscriber<T, T>(subscriber, this.notifier);
   }
 }
 

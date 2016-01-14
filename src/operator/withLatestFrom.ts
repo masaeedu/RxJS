@@ -5,6 +5,14 @@ import {tryCatch} from '../util/tryCatch';
 import {errorObject} from '../util/errorObject';
 import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
+import {isFunction} from '../util/isFunction';
+
+export type Projection<U, R> = (...values: U[]) => R;
+
+export interface withLatestFrom<T> {
+  <U>(...args: Observable<U>[]): Observable<U[]>;
+  <U, R>(...args: (Observable<U> | Projection<U, R>)[]): Observable<R>;
+}
 
 /**
  * @param {Observable} observables the observables to get the latest values from.
@@ -24,32 +32,40 @@ import {subscribeToResult} from '../util/subscribeToResult';
  * result: ---([a,d,x])---------([b,e,y])--------([c,f,z])---|
  * ```
  */
-export function withLatestFrom<T, R>(...args: Array<Observable<any> | ((...values: Array<any>) => R)>): Observable<R> {
-  let project: any;
-  if (typeof args[args.length - 1] === 'function') {
-    project = args.pop();
+export function withLatestFrom<T, U, R>(...args: (Observable<U> | Projection<T | U, R>)[]): Observable<(T | U)[]> | Observable<R> {
+  let _this: Observable<T> = this;
+  
+  let project: Projection<T | U, R>;
+  let observables: Observable<U>[];
+  
+  let last = args.pop();
+  observables = <Observable<U>[]>args;
+  if (isFunction(last)) {
+    project = last;
+  } else {
+    observables.push(last);
   }
-  const observables = <Observable<any>[]>args;
-  return this.lift(new WithLatestFromOperator(observables, project));
+  // TODO: The way this is implemented is not type safe. Need to fix implementation
+  return <any>_this.lift(new WithLatestFromOperator<T, U, R>(observables, project));
 }
 
-class WithLatestFromOperator<T, R> implements Operator<T, R> {
-  constructor(private observables: Observable<any>[],
-              private project?: (...values: any[]) => Observable<R>) {
+class WithLatestFromOperator<T, U, R> implements Operator<T, (T | U)[] | R> {
+  constructor(private observables: Observable<U>[],
+              private project?: Projection<T | U, R>) {
   }
 
-  call(subscriber: Subscriber<T>): Subscriber<T> {
-    return new WithLatestFromSubscriber(subscriber, this.observables, this.project);
+  call(subscriber: Subscriber<(T | U)[] | R>): Subscriber<T> {
+    return new WithLatestFromSubscriber<T, U, R>(subscriber, this.observables, this.project);
   }
 }
 
-class WithLatestFromSubscriber<T, R> extends OuterSubscriber<T, R> {
+class WithLatestFromSubscriber<T, U, R> extends OuterSubscriber<T, R> {
   private values: any[];
   private toRespond: number[] = [];
 
-  constructor(destination: Subscriber<T>,
-              private observables: Observable<any>[],
-              private project?: (...values: any[]) => Observable<R>) {
+  constructor(destination: Subscriber<(T | U)[] | R>,
+              private observables: Observable<U>[],
+              private project?: Projection<T | U, R>) {
     super(destination);
     const len = observables.length;
     this.values = new Array(len);

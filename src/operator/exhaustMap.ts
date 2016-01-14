@@ -6,6 +6,14 @@ import {errorObject} from '../util/errorObject';
 import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
 
+export type Projection<T, R> = (value: T, index: number) => Observable<R>;
+export type ResultSelector<T, R, R2> = (outerValue: T, innerValue: R, outerIndex: number, innerIndex: number) => R2
+
+export interface exhaustMap<T> {
+  <R>(project: Projection<T, R>): Observable<R>;
+  <R, R2>(project: Projection<T, R>, resultSelector: ResultSelector<T, R, R2>): Observable<R2>;
+}
+
 /**
  * Returns an Observable that applies the given function to each item of the source Observable
  * to create a new Observable, which are then concatenated together to produce a new Observable.
@@ -19,7 +27,8 @@ export function exhaustMap<T, R, R2>(project: (value: T, index: number) => Obser
                                             innerValue: R,
                                             outerIndex: number,
                                             innerIndex: number) => R2): Observable<R2> {
-  return this.lift(new SwitchFirstMapOperator(project, resultSelector));
+  let _this: Observable<T> = this;
+  return _this.lift(new SwitchFirstMapOperator(project, resultSelector));
 }
 
 class SwitchFirstMapOperator<T, R, R2> implements Operator<T, R2> {

@@ -2,8 +2,13 @@ import {Operator} from '../Operator';
 import {Subscriber} from '../Subscriber';
 import {Observable} from '../Observable';
 
+export interface skip<T> {
+  (total: number): Observable<T>;
+}
+
 export function skip<T>(total: number): Observable<T> {
-  return this.lift(new SkipOperator(total));
+  let _this: Observable<T> = this;
+  return _this.lift(new SkipOperator<T>(total));
 }
 
 class SkipOperator<T> implements Operator<T, T> {

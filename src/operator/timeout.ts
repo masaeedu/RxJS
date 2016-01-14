@@ -5,12 +5,17 @@ import {Subscriber} from '../Subscriber';
 import {Scheduler} from '../Scheduler';
 import {Observable} from '../Observable';
 
+export interface timeout<T> {
+  (due: number | Date, errorToSend?: any, scheduler?: Scheduler): Observable<T>;
+}
+
 export function timeout<T>(due: number | Date,
                            errorToSend: any = null,
                            scheduler: Scheduler = asap): Observable<T> {
+  let _this: Observable<T> = this;
   let absoluteTimeout = isDate(due);
   let waitFor = absoluteTimeout ? (+due - scheduler.now()) : Math.abs(<number>due);
-  return this.lift(new TimeoutOperator(waitFor, absoluteTimeout, errorToSend, scheduler));
+  return _this.lift(new TimeoutOperator<T>(waitFor, absoluteTimeout, errorToSend, scheduler));
 }
 
 class TimeoutOperator<T> implements Operator<T, T> {

@@ -5,6 +5,16 @@ import {tryCatch} from '../util/tryCatch';
 import {errorObject} from '../util/errorObject';
 import {EmptyError} from '../util/EmptyError';
 
+export type Predicate<T> = (value: T, index: number, source: Observable<T>) => boolean;
+export type ResultSelector<T, R> = (value: T, index: number) => R;
+
+export interface first<T> {
+  (): Observable<T>;
+  (predicate: Predicate<T>): Observable<T>;
+  <R>(predicate: Predicate<T>, resultSelector: ResultSelector<T, R>): Observable<R>;
+  <R>(predicate: Predicate<T>, resultSelector: ResultSelector<T, R>, defaultValue: R): Observable<R>;
+}
+
 /**
  * Returns an Observable that emits the first item of the source Observable that matches the specified condition.
  * Throws an error if matching element is not found.
@@ -14,7 +24,8 @@ import {EmptyError} from '../util/EmptyError';
 export function first<T, R>(predicate?: (value: T, index: number, source: Observable<T>) => boolean,
                             resultSelector?: (value: T, index: number) => R,
                             defaultValue?: R): Observable<T> | Observable<R> {
-  return this.lift(new FirstOperator(predicate, resultSelector, defaultValue, this));
+  let _this: Observable<T> = this;
+  return _this.lift(new FirstOperator(predicate, resultSelector, defaultValue, _this));
 }
 
 class FirstOperator<T, R> implements Operator<T, R> {

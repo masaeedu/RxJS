@@ -2,8 +2,13 @@ import {Operator} from '../Operator';
 import {Subscriber} from '../Subscriber';
 import {Observable} from '../Observable';
 
+export interface toArray<T> {
+  (): Observable<T[]>;
+}
+
 export function toArray<T>(): Observable<T[]> {
-  return this.lift(new ToArrayOperator());
+  let _this: Observable<T> = this;
+  return _this.lift(new ToArrayOperator<T>());
 }
 
 class ToArrayOperator<T> implements Operator<T, T[]> {

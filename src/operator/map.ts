@@ -4,6 +4,10 @@ import {Observable} from '../Observable';
 import {tryCatch} from '../util/tryCatch';
 import {errorObject} from '../util/errorObject';
 
+export interface map<T> {
+  <R>(map: (value: T, index: number) => R, thisArg?: any): Observable<R>;
+}
+
 /**
  * Similar to the well known `Array.prototype.map` function, this operator
  * applies a projection to each value and emits that projection in the returned observable
@@ -13,10 +17,11 @@ import {errorObject} from '../util/errorObject';
  * @returns {Observable} a observable of projected values
  */
 export function map<T, R>(project: (value: T, index: number) => R, thisArg?: any): Observable<R> {
+  let _this: Observable<T> = this;
   if (typeof project !== 'function') {
     throw new TypeError('argument is not a function. Are you looking for `mapTo()`?');
   }
-  return this.lift(new MapOperator(project, thisArg));
+  return _this.lift(new MapOperator(project, thisArg));
 }
 
 class MapOperator<T, R> implements Operator<T, R> {

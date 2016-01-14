@@ -5,6 +5,10 @@ import {Subscription} from '../Subscription';
 import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
 
+export interface exhaust<T> {
+  (): Observable<T>;
+}
+
 /**
  * Returns an Observable that takes a source of observables and propagates the first observable exclusively
  * until it completes before subscribing to the next.
@@ -13,7 +17,8 @@ import {subscribeToResult} from '../util/subscribeToResult';
  * @returns {Observable} an Observable which contains all of the items of the first Observable and following Observables in the source.
  */
 export function exhaust<T>(): Observable<T> {
-  return this.lift(new SwitchFirstOperator());
+  let _this: Observable<T> = this;
+  return _this.lift(new SwitchFirstOperator<T>());
 }
 
 class SwitchFirstOperator<T> implements Operator<T, T> {

@@ -127,7 +127,7 @@
     "systemjs": "^0.19.6",
     "systemjs-builder": "^0.10.6",
     "tslint": "3.2.0-dev.1",
-    "typescript": "1.8.0-dev.20151115",
+    "typescript": "^1.8.0-dev.20160114",
     "validate-commit-msg": "1.0.0",
     "watch": "0.16.0",
     "xmlhttprequest": "^1.8.0"

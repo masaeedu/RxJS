@@ -3,6 +3,10 @@ import {Subscriber} from '../Subscriber';
 import {ArgumentOutOfRangeError} from '../util/ArgumentOutOfRangeError';
 import {Observable} from '../Observable';
 
+export interface elementAt<T> {
+  (index: number, defaultValue?: T): Observable<T>
+}
+
 /**
  * Returns an Observable that emits the item at the specified index in the source Observable.
  * If default is given, missing indices will output this value on next; otherwise, outputs error.
@@ -11,7 +15,8 @@ import {Observable} from '../Observable';
  * @returns {Observable} an Observable that emits a single item, if it is found. Otherwise, will emit the default value if given.
  */
 export function elementAt<T>(index: number, defaultValue?: T): Observable<T> {
-  return this.lift(new ElementAtOperator(index, defaultValue));
+  let _this: Observable<T> = this;
+  return _this.lift(new ElementAtOperator(index, defaultValue));
 }
 
 class ElementAtOperator<T> implements Operator<T, T> {

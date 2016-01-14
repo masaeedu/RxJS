@@ -9,6 +9,10 @@ import {errorObject} from '../util/errorObject';
 import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
 
+export interface debounce<T> {
+  (durationSelector: (value: T) => Observable<number> | Promise<number>): Observable<T>;
+}
+
 /**
  * Returns the source Observable delayed by the computed debounce duration,
  * with the duration lengthened if a new source item arrives before the delay
@@ -20,7 +24,8 @@ import {subscribeToResult} from '../util/subscribeToResult';
  * @returns {Observable} an Observable the same as source Observable, but drops items.
  */
 export function debounce<T>(durationSelector: (value: T) => Observable<number> | Promise<number>): Observable<T> {
-  return this.lift(new DebounceOperator(durationSelector));
+  let _this: Observable<T> = this;
+  return _this.lift(new DebounceOperator(durationSelector));
 }
 
 class DebounceOperator<T> implements Operator<T, T> {

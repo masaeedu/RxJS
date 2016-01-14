@@ -8,6 +8,10 @@ import {errorObject} from '../util/errorObject';
 import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
 
+export interface bufferWhen<T> {
+  (closingSelector: () => Observable<any>): Observable<T[]>;
+}
+
 /**
  * Opens a buffer immediately, then closes the buffer when the observable
  * returned by calling `closingSelector` emits a value. It that immediately
@@ -20,7 +24,8 @@ import {subscribeToResult} from '../util/subscribeToResult';
  * @returns {Observable<T[]>} an observable of arrays of buffered values.
  */
 export function bufferWhen<T>(closingSelector: () => Observable<any>): Observable<T[]> {
-  return this.lift(new BufferWhenOperator(closingSelector));
+  let _this: Observable<T> = this;
+  return _this.lift(new BufferWhenOperator<T>(closingSelector));
 }
 
 class BufferWhenOperator<T> implements Operator<T, T[]> {

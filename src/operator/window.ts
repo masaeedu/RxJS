@@ -3,8 +3,13 @@ import {Subscriber} from '../Subscriber';
 import {Observable} from '../Observable';
 import {Subject} from '../Subject';
 
+export interface window<T> {
+  (closingNotifier: Observable<any>): Observable<Observable<T>>;
+}
+
 export function window<T>(closingNotifier: Observable<any>): Observable<Observable<T>> {
-  return this.lift(new WindowOperator(closingNotifier));
+  let _this: Observable<T> = this;
+  return _this.lift(new WindowOperator<T>(closingNotifier));
 }
 
 class WindowOperator<T> implements Operator<T, Observable<T>> {

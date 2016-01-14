@@ -5,14 +5,14 @@ import {Subscriber} from '../Subscriber';
 import {tryCatch} from '../util/tryCatch';
 import {errorObject} from '../util/errorObject';
 
-export class FindValueOperator<T> implements Operator<T, T> {
+export class FindValueOperator<T> implements Operator<T, T | number> {
   constructor(private predicate: (value: T, index: number, source: Observable<T>) => boolean,
               private source: Observable<T>,
               private yieldIndex: boolean,
               private thisArg?: any) {
   }
 
-  call(observer: Subscriber<T>): Subscriber<T> {
+  call(observer: Subscriber<T | number>): Subscriber<T> {
     return new FindValueSubscriber(observer, this.predicate, this.source, this.yieldIndex, this.thisArg);
   }
 }
@@ -20,7 +20,7 @@ export class FindValueOperator<T> implements Operator<T, T> {
 export class FindValueSubscriber<T> extends Subscriber<T> {
   private index: number = 0;
 
-  constructor(destination: Subscriber<T>,
+  constructor(destination: Subscriber<T | number>,
               private predicate: (value: T, index: number, source: Observable<T>) => boolean,
               private source: Observable<T>,
               private yieldIndex: boolean,

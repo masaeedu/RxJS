@@ -4,11 +4,16 @@ import {ArgumentOutOfRangeError} from '../util/ArgumentOutOfRangeError';
 import {EmptyObservable} from '../observable/empty';
 import {Observable} from '../Observable';
 
+export interface take<T> {
+  (total: number): Observable<T>;
+}
+
 export function take<T>(total: number): Observable<T> {
+  let _this: Observable<T> = this;
   if (total === 0) {
     return new EmptyObservable<T>();
   } else {
-    return this.lift(new TakeOperator(total));
+    return _this.lift(new TakeOperator<T>(total));
   }
 }
 

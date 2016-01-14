@@ -5,6 +5,10 @@ import {Subscription} from '../Subscription';
 import {tryCatch} from '../util/tryCatch';
 import {errorObject} from '../util/errorObject';
 
+export interface bufferToggle<T> {
+  <O>(openings: Observable<O>, closingSelector: (value: O) => Observable<any>): Observable<T[]>
+}
+
 /**
  * Buffers values from the source by opening the buffer via signals from an
  * Observable provided to `openings`, and closing and sending the buffers when
@@ -19,15 +23,15 @@ import {errorObject} from '../util/errorObject';
  * signals that the associated buffer should be emitted and cleared.
  * @returns {Observable<T[]>} an observable of arrays of buffered values.
  */
-export function bufferToggle<T, O>(openings: Observable<O>,
-                                   closingSelector: (value: O) => Observable<any>): Observable<T[]> {
-  return this.lift(new BufferToggleOperator(openings, closingSelector));
+export function bufferToggle<T, O>(openings: Observable<O>, closingSelector: (value: O) => Observable<any>): Observable<T[]> {
+  let _this: Observable<T> = this;
+  return _this.lift(new BufferToggleOperator<T, O>(openings, closingSelector));
 }
 
 class BufferToggleOperator<T, O> implements Operator<T, T[]> {
 
   constructor(private openings: Observable<O>,
-              private closingSelector: (value: O) => Observable<any>) {
+    private closingSelector: (value: O) => Observable<any>) {
   }
 
   call(subscriber: Subscriber<T[]>): Subscriber<T> {
@@ -44,8 +48,8 @@ class BufferToggleSubscriber<T, O> extends Subscriber<T> {
   private contexts: Array<BufferContext<T>> = [];
 
   constructor(destination: Subscriber<T[]>,
-              private openings: Observable<O>,
-              private closingSelector: (value: O) => Observable<any>) {
+    private openings: Observable<O>,
+    private closingSelector: (value: O) => Observable<any>) {
     super(destination);
     this.add(this.openings.subscribe(new BufferToggleOpeningsSubscriber(this)));
   }
@@ -136,7 +140,7 @@ class BufferToggleOpeningsSubscriber<T, O> extends Subscriber<O> {
 
 class BufferToggleClosingsSubscriber<T> extends Subscriber<any> {
   constructor(private parent: BufferToggleSubscriber<T, any>,
-              private context: { subscription: any, buffer: T[] }) {
+    private context: { subscription: any, buffer: T[] }) {
     super(null);
   }
 

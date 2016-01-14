@@ -7,13 +7,13 @@ import {errorObject} from '../util/errorObject';
 import {subscribeToResult} from '../util/subscribeToResult';
 import {OuterSubscriber} from '../OuterSubscriber';
 
-export class MergeMapOperator<T, R, R2> implements Operator<T, R> {
+export class MergeMapOperator<T, R, R2> implements Operator<T, R | R2> {
   constructor(private project: (value: T, index: number) => Observable<R>,
               private resultSelector?: (outerValue: T, innerValue: R, outerIndex: number, innerIndex: number) => R2,
               private concurrent: number = Number.POSITIVE_INFINITY) {
   }
 
-  call(observer: Subscriber<R>): Subscriber<T> {
+  call(observer: Subscriber<R | R2>): Subscriber<T> {
     return new MergeMapSubscriber(
       observer, this.project, this.resultSelector, this.concurrent
     );

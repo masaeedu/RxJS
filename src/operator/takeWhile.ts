@@ -4,8 +4,13 @@ import {Subscriber} from '../Subscriber';
 import {tryCatch} from '../util/tryCatch';
 import {errorObject} from '../util/errorObject';
 
+export interface takeWhile<T> {
+  (predicate: (value: T, index: number) => boolean): Observable<T>;
+}
+
 export function takeWhile<T>(predicate: (value: T, index: number) => boolean): Observable<T> {
-  return this.lift(new TakeWhileOperator(predicate));
+  let _this: Observable<T> = this;
+  return _this.lift(new TakeWhileOperator(predicate));
 }
 
 class TakeWhileOperator<T> implements Operator<T, T> {

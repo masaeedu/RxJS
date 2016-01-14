@@ -4,6 +4,10 @@ import {Observable} from '../Observable';
 import {tryCatch} from '../util/tryCatch';
 import {errorObject} from '../util/errorObject';
 
+export interface _catch<T> {
+  <R>(selector: (err: any, caught: Observable<T>) => Observable<R>): Observable<R>
+}
+
 /**
  * Catches errors on the observable to be handled by returning a new observable or throwing an error.
  * @param {function} selector a function that takes as arguments `err`, which is the error, and `caught`, which
@@ -13,8 +17,9 @@ import {errorObject} from '../util/errorObject';
  *  catch `selector` function.
  */
 export function _catch<T, R>(selector: (err: any, caught: Observable<T>) => Observable<R>): Observable<R> {
-  const operator = new CatchOperator(selector);
-  const caught = this.lift(operator);
+  let _this: Observable<T> = this;
+  const operator = new CatchOperator<T, R>(selector);
+  const caught = _this.lift(operator);
   return (operator.caught = caught);
 }
 
@@ -25,7 +30,7 @@ class CatchOperator<T, R> implements Operator<T, R> {
   }
 
   call(subscriber: Subscriber<R>): Subscriber<T> {
-    return new CatchSubscriber(subscriber, this.selector, this.caught);
+    return new CatchSubscriber<T>(subscriber, this.selector, this.caught);
   }
 }
 

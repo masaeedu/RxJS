@@ -7,8 +7,14 @@ import {tryCatch} from '../util/tryCatch';
 import {errorObject} from '../util/errorObject';
 import {EmptyError} from '../util/EmptyError';
 
+export interface single<T> {
+  (): Observable<T>;
+  (predicate: (value: T, index: number, source: Observable<T>) => boolean): Observable<T>;
+}
+
 export function single<T>(predicate?: (value: T, index: number, source: Observable<T>) => boolean): Observable<T> {
-  return this.lift(new SingleOperator(predicate, this));
+  let _this: Observable<T> = this;
+  return _this.lift(new SingleOperator(predicate, _this));
 }
 
 class SingleOperator<T> implements Operator<T, T> {

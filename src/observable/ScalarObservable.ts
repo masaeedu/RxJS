@@ -27,7 +27,7 @@ export class ScalarObservable<T> extends Observable<T> {
 
   _isScalar: boolean = true;
 
-  constructor(public value: T, private scheduler?: Scheduler) {
+  constructor(public value: T, public scheduler?: Scheduler) {
     super();
   }
 

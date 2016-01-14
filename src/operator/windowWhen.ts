@@ -7,8 +7,13 @@ import {Subscription} from '../Subscription';
 import {tryCatch} from '../util/tryCatch';
 import {errorObject} from '../util/errorObject';
 
+export interface windowWhen<T> {
+  (closingSelector: () => Observable<any>): Observable<Observable<T>>;
+}
+
 export function windowWhen<T>(closingSelector: () => Observable<any>): Observable<Observable<T>> {
-  return this.lift(new WindowOperator(closingSelector));
+  let _this: Observable<T> = this;
+  return _this.lift(new WindowOperator<T>(closingSelector));
 }
 
 class WindowOperator<T> implements Operator<T, Observable<T>> {

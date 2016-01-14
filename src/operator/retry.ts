@@ -2,8 +2,13 @@ import {Operator} from '../Operator';
 import {Subscriber} from '../Subscriber';
 import {Observable} from '../Observable';
 
+export interface retry<T> {
+  (count?: number): Observable<T>;
+}
+
 export function retry<T>(count: number = -1): Observable<T> {
-  return this.lift(new RetryOperator(count, this));
+  let _this: Observable<T> = this;
+  return _this.lift(new RetryOperator(count, _this));
 }
 
 class RetryOperator<T> implements Operator<T, T> {

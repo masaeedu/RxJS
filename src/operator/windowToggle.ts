@@ -10,9 +10,14 @@ import {errorObject} from '../util/errorObject';
 import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
 
+export interface windowToggle<T> {
+  <O>(openings: Observable<O>, closingSelector: (openValue: O) => Observable<any>): Observable<Observable<T>>;
+}
+
 export function windowToggle<T, O>(openings: Observable<O>,
                                    closingSelector: (openValue: O) => Observable<any>): Observable<Observable<T>> {
-  return this.lift(new WindowToggleOperator(openings, closingSelector));
+  let _this: Observable<T> = this;
+  return _this.lift(new WindowToggleOperator<T, O>(openings, closingSelector));
 }
 
 class WindowToggleOperator<T, O> implements Operator<T, Observable<T>> {

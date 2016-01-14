@@ -4,8 +4,13 @@ import {Subscriber} from '../Subscriber';
 import {Scheduler} from '../Scheduler';
 import {asap} from '../scheduler/asap';
 
+export interface sampleTime<T> {
+  (delay: number, scheduler?: Scheduler): Observable<T>;
+}
+
 export function sampleTime<T>(delay: number, scheduler: Scheduler = asap): Observable<T> {
-  return this.lift(new SampleTimeOperator(delay, scheduler));
+  let _this: Observable<T> = this;
+  return _this.lift(new SampleTimeOperator<T>(delay, scheduler));
 }
 
 class SampleTimeOperator<T> implements Operator<T, T> {

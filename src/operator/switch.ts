@@ -1,16 +1,22 @@
 import {Operator} from '../Operator';
+import {Observable} from '../Observable';
 import {Subscriber} from '../Subscriber';
 import {Subscription} from '../Subscription';
 import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
 
-export function _switch<T>(): T {
-  return this.lift(new SwitchOperator());
+export interface _switch<T extends Observable<U>, U> {
+  (): Observable<U>;
 }
 
-class SwitchOperator<T, R> implements Operator<T, R> {
-  call(subscriber: Subscriber<R>): Subscriber<T> {
-    return new SwitchSubscriber(subscriber);
+export function _switch<T extends Observable<U>, U>(): Observable<U> {
+  let _this: Observable<Observable<U>> = this;
+  return _this.lift(new SwitchOperator<U>());
+}
+
+class SwitchOperator<T> implements Operator<Observable<T>, T> {
+  call(subscriber: Subscriber<T>): Subscriber<Observable<T>> {
+    return new SwitchSubscriber<Observable<T>, T>(subscriber);
   }
 }
 

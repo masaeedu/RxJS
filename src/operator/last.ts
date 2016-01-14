@@ -5,13 +5,23 @@ import {tryCatch} from '../util/tryCatch';
 import {errorObject} from '../util/errorObject';
 import {EmptyError} from '../util/EmptyError';
 
+export type Predicate<T> = (value: T, index: number, source: Observable<T>) => boolean;
+
+export interface last<T> {
+  (): Observable<T>;
+  (predicate: Predicate<T>): Observable<T>;
+  <R>(predicate: Predicate<T>, resultSelector: (value: T, index: number) => R): Observable<R>;
+  <R>(predicate: Predicate<T>, resultSelector: (value: T, index: number) => R, defaultValue: R): Observable<R>;
+}
+
 export function last<T, R>(predicate?: (value: T, index: number, source: Observable<T>) => boolean,
                            resultSelector?: (value: T, index: number) => R,
                            defaultValue?: R): Observable<T> | Observable<R> {
-  return this.lift(new LastOperator(predicate, resultSelector, defaultValue, this));
+  let _this: Observable<T> = this;
+  return _this.lift(new LastOperator(predicate, resultSelector, defaultValue, _this));
 }
 
-class LastOperator<T, R> implements Operator<T, R> {
+class LastOperator<T, R> implements Operator<T, T | R> {
   constructor(private predicate?: (value: T, index: number, source: Observable<T>) => boolean,
               private resultSelector?: (value: T, index: number) => R,
               private defaultValue?: any,

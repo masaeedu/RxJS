@@ -4,8 +4,13 @@ import {Subscriber} from '../Subscriber';
 import {Scheduler} from '../Scheduler';
 import {asap} from '../scheduler/asap';
 
+export interface timeInterval<T> {
+  (scheduler?: Scheduler): Observable<TimeInterval<T>>;
+}
+
 export function timeInterval<T>(scheduler: Scheduler = asap): Observable<TimeInterval<T>> {
-  return this.lift(new TimeIntervalOperator(scheduler));
+  let _this: Observable<T> = this;
+  return _this.lift(new TimeIntervalOperator<T>(scheduler));
 }
 
 export class TimeInterval<T> {

@@ -1,6 +1,10 @@
 import {distinctUntilChanged} from './distinctUntilChanged';
 import {Observable} from '../Observable';
 
+export interface distinctUntilKeyChanged<T> {
+  (key: string, compare?: (x: T, y: T) => boolean): Observable<T>;
+}
+
 /**
  * Returns an Observable that emits all items emitted by the source Observable that are distinct by comparison from the previous item,
  * using a property accessed by using the key provided to check if the two items are distinct.
@@ -11,7 +15,8 @@ import {Observable} from '../Observable';
  * @returns {Observable} an Observable that emits items from the source Observable with distinct values based on the key specified.
  */
 export function distinctUntilKeyChanged<T>(key: string, compare?: (x: T, y: T) => boolean): Observable<T> {
-  return distinctUntilChanged.call(this, function(x: T, y: T) {
+  let _this: Observable<T> = this;
+  return distinctUntilChanged.call(_this, function(x: T, y: T) {
     if (compare) {
       return compare(x[key], y[key]);
     }

@@ -6,6 +6,12 @@ import {Subscriber} from '../Subscriber';
 import {tryCatch} from '../util/tryCatch';
 import {errorObject} from '../util/errorObject';
 
+export type Predicate<T> = (value: T, index: number, source: Observable<T>) => boolean;
+
+export interface count<T> {
+  (predicate?: Predicate<T>): Observable<number>;
+}
+
 /**
  * Returns an observable of a single number that represents the number of items that either:
  * Match a provided predicate function, _or_ if a predicate is not provided, the number
@@ -19,8 +25,9 @@ import {errorObject} from '../util/errorObject';
  * @returns {Observable} an observable of one number that represents the count as described
  * above
  */
-export function count<T>(predicate?: (value: T, index: number, source: Observable<T>) => boolean): Observable<number> {
-  return this.lift(new CountOperator(predicate, this));
+export function count<T>(predicate?: Predicate<T>): Observable<number> {
+  let _this: Observable<T> = this;
+  return _this.lift(new CountOperator(predicate, _this));
 }
 
 class CountOperator<T> implements Operator<T, number> {

@@ -2,6 +2,10 @@ import {Operator} from '../Operator';
 import {Subscriber} from '../Subscriber';
 import {Observable} from '../Observable';
 
+export interface bufferCount<T> {
+  (bufferSize: number, startBufferEvery: number): Observable<T[]>
+}
+
 /**
  * Buffers a number of values from the source observable by `bufferSize` then
  * emits the buffer and clears it, and starts a new buffer each
@@ -19,7 +23,8 @@ import {Observable} from '../Observable';
  * @returns {Observable<T[]>} an Observable of arrays of buffered values.
  */
 export function bufferCount<T>(bufferSize: number, startBufferEvery: number = null): Observable<T[]> {
-  return this.lift(new BufferCountOperator(bufferSize, startBufferEvery));
+  let _this: Observable<T> = this;
+  return _this.lift(new BufferCountOperator<T>(bufferSize, startBufferEvery));
 }
 
 class BufferCountOperator<T> implements Operator<T, T[]> {

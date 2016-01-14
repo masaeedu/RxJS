@@ -1,6 +1,11 @@
 import {CombineLatestOperator} from './combineLatest-support';
 import {Observable} from '../Observable';
 
+export interface combineAll<T extends Observable<U>, U> {
+  (): Observable<U[]>;
+  <R>(project: (...values: U[]) => R): Observable<R>;
+}
+
 /**
  * Takes an Observable of Observables, and collects all observables from it. Once the outer observable
  * completes, it subscribes to all collected observables and "combines" their values, such that:
@@ -13,6 +18,8 @@ import {Observable} from '../Observable';
  *   most recent values from each collected observable as arguments, in order.
  * @returns {Observable} an observable of projected results or arrays of recent values.
  */
-export function combineAll<T, R>(project?: (...values: Array<any>) => R): Observable<R> {
-  return this.lift(new CombineLatestOperator(project));
+export function combineAll<T extends Observable<U>, U, R>(project?: (...values: U[]) => R): Observable<U[]> | Observable<R> {
+  let _this: Observable<Observable<U>> = this;
+  // TODO: The way this is implemented is not type safe. Need to fix implementation
+  return <any>_this.lift(new CombineLatestOperator<T, U, R>(project));
 }

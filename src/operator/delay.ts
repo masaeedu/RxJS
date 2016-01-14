@@ -6,6 +6,10 @@ import {Subscriber} from '../Subscriber';
 import {Notification} from '../Notification';
 import {Observable} from '../Observable';
 
+export interface delay<T> {
+  (delay: number|Date, scheduler: Scheduler): Observable<T>;
+}
+
 /**
  * Returns an Observable that delays the emission of items from the source Observable
  * by a given timeout or until a given Date.
@@ -15,9 +19,10 @@ import {Observable} from '../Observable';
  */
 export function delay<T>(delay: number|Date,
                          scheduler: Scheduler = asap): Observable<T> {
+  let _this: Observable<T> = this;
   const absoluteDelay = isDate(delay);
   const delayFor = absoluteDelay ? (+delay - scheduler.now()) : Math.abs(<number>delay);
-  return this.lift(new DelayOperator(delayFor, scheduler));
+  return _this.lift(new DelayOperator<T>(delayFor, scheduler));
 }
 
 class DelayOperator<T> implements Operator<T, T> {

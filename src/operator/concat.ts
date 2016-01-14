@@ -4,6 +4,11 @@ import {isScheduler} from '../util/isScheduler';
 import {ArrayObservable} from '../observable/fromArray';
 import {MergeAllOperator} from './mergeAll-support';
 
+export interface concat<T> {
+  // TODO: Expand and reify this rest parameter to prevent incorrect consumption
+  <U>(...args: (Observable<U> | Scheduler)[]): Observable<T | U>;
+}
+
 /**
  * Joins this observable with multiple other observables by subscribing to them one at a time, starting with the source,
  * and merging their results into the returned observable. Will wait for each observable to complete before moving
@@ -12,14 +17,20 @@ import {MergeAllOperator} from './mergeAll-support';
  * @params {Scheduler} [scheduler] an optional scheduler to schedule each observable subscription on.
  * @returns {Observable} All values of each passed observable merged into a single observable, in order, in serial fashion.
  */
-export function concat<T, R>(...observables: Array<Observable<any> | Scheduler>): Observable<R> {
-  let args = <any[]>observables;
-  args.unshift(this);
+export function concat<T, U>(...args: (Observable<U> | Scheduler)[]): Observable<T | U> {
+  let _this: Observable<T> = this;
+  let observables: Observable<T | U>[];
+  let scheduler: Scheduler;
 
-  let scheduler: Scheduler = null;
-  if (isScheduler(args[args.length - 1])) {
-    scheduler = args.pop();
+  let last = args.pop();
+  observables = <Observable<U>[]>args;
+  if (isScheduler(last)) {
+    scheduler = last;
+  } else if (last) {
+    observables.push(last);
   }
+  
+  observables.unshift(_this);
 
-   return new ArrayObservable(args, scheduler).lift<Observable<T>, R>(new MergeAllOperator<R>(1));
+  return new ArrayObservable(observables, scheduler).lift(new MergeAllOperator<T | U>(1));
 }

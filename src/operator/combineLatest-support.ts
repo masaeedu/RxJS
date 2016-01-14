@@ -1,4 +1,5 @@
 import {Operator} from '../Operator';
+import {Observable} from '../Observable';
 import {Subscriber} from '../Subscriber';
 
 import {tryCatch} from '../util/tryCatch';
@@ -6,26 +7,26 @@ import {errorObject} from '../util/errorObject';
 import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
 
-export class CombineLatestOperator<T, R> implements Operator<T, R> {
-  constructor(private project?: (...values: Array<any>) => R) {
+export class CombineLatestOperator<T extends Observable<U>, U, R> implements Operator<T, U[] | R> {
+  constructor(private project?: (...values: U[]) => R) {
   }
 
-  call(subscriber: Subscriber<R>): Subscriber<T> {
-    return new CombineLatestSubscriber(subscriber, this.project);
+  call(subscriber: Subscriber<U[] | R>): Subscriber<T> {
+    return new CombineLatestSubscriber<T, U, R>(subscriber, this.project);
   }
 }
 
-export class CombineLatestSubscriber<T, R> extends OuterSubscriber<T, R> {
+export class CombineLatestSubscriber<T extends Observable<U>, U, R> extends OuterSubscriber<T, R> {
   private active: number = 0;
   private values: any[] = [];
   private observables: any[] = [];
   private toRespond: number[] = [];
 
-  constructor(destination: Subscriber<R>, private project?: (...values: Array<any>) => R) {
+  constructor(destination: Subscriber<U[] | R>, private project?: (...values: U[]) => R) {
     super(destination);
   }
 
-  protected _next(observable: any) {
+  protected _next(observable: T) {
     const toRespond = this.toRespond;
     toRespond.push(toRespond.length);
     this.observables.push(observable);

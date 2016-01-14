@@ -1,6 +1,6 @@
 import {Observable} from '../Observable';
 import {Operator} from '../Operator';
-import {Observer} from '../Observer';
+import {Subscriber} from '../Subscriber';
 import {Subscription} from '../Subscription';
 import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
@@ -9,8 +9,8 @@ export class MergeAllOperator<T> implements Operator<Observable<T>, T> {
   constructor(private concurrent: number) {
   }
 
-  call(observer: Observer<T>) {
-    return new MergeAllSubscriber(observer, this.concurrent);
+  call(observer: Subscriber<T>): Subscriber<Observable<T>> {
+    return new MergeAllSubscriber<T>(observer, this.concurrent);
   }
 }
 
@@ -19,7 +19,7 @@ export class MergeAllSubscriber<T> extends OuterSubscriber<Observable<T>, T> {
   private buffer: Observable<T>[] = [];
   private active: number = 0;
 
-  constructor(destination: Observer<T>, private concurrent: number) {
+  constructor(destination: Subscriber<T>, private concurrent: number) {
     super(destination);
   }
 

@@ -2,6 +2,10 @@ import {Observable} from '../Observable';
 import {Scheduler} from '../Scheduler';
 import {ExpandOperator} from './expand-support';
 
+export interface expand<T> {
+  <R>(project: (value: T, index: number) => Observable<R>, concurrent: number, scheduler: Scheduler): Observable<R>;
+}
+
 /**
  * Returns an Observable where for each item in the source Observable, the supplied function is applied to each item,
  * resulting in a new value to then be applied again with the function.
@@ -13,7 +17,8 @@ import {ExpandOperator} from './expand-support';
 export function expand<T, R>(project: (value: T, index: number) => Observable<R>,
                              concurrent: number = Number.POSITIVE_INFINITY,
                              scheduler: Scheduler = undefined): Observable<R> {
+  let _this: Observable<T> = this;
   concurrent = (concurrent || 0) < 1 ? Number.POSITIVE_INFINITY : concurrent;
 
-  return this.lift(new ExpandOperator(project, concurrent, scheduler));
+  return _this.lift(new ExpandOperator(project, concurrent, scheduler));
 }

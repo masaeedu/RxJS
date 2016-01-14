@@ -4,6 +4,10 @@ import {tryCatch} from '../util/tryCatch';
 import {errorObject} from '../util/errorObject';
 import {Observable} from '../Observable';
 
+export interface filter<T> {
+  (select: (value: T, index: number) => boolean, thisArg?: any): Observable<T>;
+}
+
 /**
  * Similar to the well-known `Array.prototype.filter` method, this operator filters values down to a set
  * allowed by a `select` function
@@ -14,7 +18,8 @@ import {Observable} from '../Observable';
  * @returns {Observable} an observable of values allowed by the select function
  */
 export function filter<T>(select: (value: T, index: number) => boolean, thisArg?: any): Observable<T> {
-  return this.lift(new FilterOperator(select, thisArg));
+  let _this: Observable<T> = this;
+  return _this.lift(new FilterOperator(select, thisArg));
 }
 
 class FilterOperator<T> implements Operator<T, T> {

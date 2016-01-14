@@ -7,21 +7,25 @@ import {errorObject} from '../util/errorObject';
 import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
 
-export function switchMapTo<T, R, R2>(observable: Observable<R>,
-                                      resultSelector?: (
-                                                 outerValue: T,
-                                                 innerValue: R,
-                                                 outerIndex: number,
-                                                 innerIndex: number) => R2): Observable<R2> {
-  return this.lift(new SwitchMapToOperator(observable, resultSelector));
+export type ResultSelector<T, R, R2> = (outerValue: T, innerValue: R, outerIndex: number, innerIndex: number) => R2;
+
+export interface switchMapTo<T> {
+  <R>(observable: Observable<R>): Observable<R>;
+  <R, R2>(observable: Observable<R>, resultSelector: ResultSelector<T, R, R2>): Observable<R2>;
 }
 
-class SwitchMapToOperator<T, R, R2> implements Operator<T, R> {
+export function switchMapTo<T, R, R2>(observable: Observable<R>, resultSelector?: ResultSelector<T, R, R2>): Observable<R> | Observable<R2> {
+  let _this: Observable<T> = this;
+  // TODO: The way this is implemented is not type safe. Need to fix implementation
+  return <any>_this.lift(new SwitchMapToOperator(observable, resultSelector));
+}
+
+class SwitchMapToOperator<T, R, R2> implements Operator<T, R | R2> {
   constructor(private observable: Observable<R>,
               private resultSelector?: (outerValue: T, innerValue: R, outerIndex: number, innerIndex: number) => R2) {
   }
 
-  call(subscriber: Subscriber<R>): Subscriber<T> {
+  call(subscriber: Subscriber<R | R2>): Subscriber<T> {
     return new SwitchMapToSubscriber(subscriber, this.observable, this.resultSelector);
   }
 }

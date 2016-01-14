@@ -5,8 +5,13 @@ import {Observable} from '../Observable';
 import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
 
+export interface skipUntil<T> {
+  (notifier: Observable<any>): Observable<T>;
+}
+
 export function skipUntil<T>(notifier: Observable<any>): Observable<T> {
-  return this.lift(new SkipUntilOperator(notifier));
+  let _this: Observable<T> = this;
+  return _this.lift(new SkipUntilOperator<T>(notifier));
 }
 
 class SkipUntilOperator<T> implements Operator<T, T> {
@@ -14,11 +19,11 @@ class SkipUntilOperator<T> implements Operator<T, T> {
   }
 
   call(subscriber: Subscriber<T>): Subscriber<T> {
-    return new SkipUntilSubscriber(subscriber, this.notifier);
+    return new SkipUntilSubscriber<T>(subscriber, this.notifier);
   }
 }
 
-class SkipUntilSubscriber<T, R> extends OuterSubscriber<T, R> {
+class SkipUntilSubscriber<T> extends OuterSubscriber<T, T> {
 
   private hasValue: boolean = false;
   private isInnerStopped: boolean = false;

@@ -7,10 +7,17 @@ import {errorObject} from '../util/errorObject';
 import {subscribeToResult} from '../util/subscribeToResult';
 import {OuterSubscriber} from '../OuterSubscriber';
 
+export type Projection<T, R> = (acc: R, value: T) => Observable<R>;
+
+export interface mergeScan<T> {
+  <R>(project: Projection<T, R>, seed: R, concurrent?: number): Observable<R>;
+}
+
 export function mergeScan<T, R>(project: (acc: R, value: T) => Observable<R>,
                                 seed: R,
                                 concurrent: number = Number.POSITIVE_INFINITY): Observable<R> {
-  return this.lift(new MergeScanOperator(project, seed, concurrent));
+  let _this: Observable<T> = this;
+  return _this.lift(new MergeScanOperator(project, seed, concurrent));
 }
 
 export class MergeScanOperator<T, R> implements Operator<T, R> {

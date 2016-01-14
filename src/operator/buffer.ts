@@ -5,6 +5,10 @@ import {Observable} from '../Observable';
 import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
 
+export interface buffer<T> {
+  (closingNotifier: Observable<any>): Observable<T[]>;
+}
+
 /**
  * Buffers the incoming observable values until the passed `closingNotifier`
  * emits a value, at which point it emits the buffer on the returned observable
@@ -19,7 +23,8 @@ import {subscribeToResult} from '../util/subscribeToResult';
  * values.
  */
 export function buffer<T>(closingNotifier: Observable<any>): Observable<T[]> {
-  return this.lift(new BufferOperator<T>(closingNotifier));
+  let _this: Observable<T> = this; 
+  return _this.lift(new BufferOperator<T>(closingNotifier));
 }
 
 class BufferOperator<T> implements Operator<T, T[]> {

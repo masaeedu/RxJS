@@ -5,20 +5,25 @@ import {Subscriber} from '../Subscriber';
 import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
 
+export interface sample<T> {
+  (notifier: Observable<any>): Observable<T>;
+}
+
 export function sample<T>(notifier: Observable<any>): Observable<T> {
-  return this.lift(new SampleOperator(notifier));
+  let _this: Observable<T> = this;
+  return _this.lift(new SampleOperator<T>(notifier));
 }
 
 class SampleOperator<T> implements Operator<T, T> {
   constructor(private notifier: Observable<any>) {
   }
 
-  call(subscriber: Subscriber<T>) {
-    return new SampleSubscriber(subscriber, this.notifier);
+  call(subscriber: Subscriber<T>): Subscriber<T> {
+    return new SampleSubscriber<T>(subscriber, this.notifier);
   }
 }
 
-class SampleSubscriber<T, R> extends OuterSubscriber<T, R> {
+class SampleSubscriber<T> extends OuterSubscriber<T, T> {
   private value: T;
   private hasValue: boolean = false;
 
@@ -32,7 +37,7 @@ class SampleSubscriber<T, R> extends OuterSubscriber<T, R> {
     this.hasValue = true;
   }
 
-  notifyNext(outerValue: T, innerValue: R, outerIndex: number, innerIndex: number): void {
+  notifyNext(outerValue: T, innerValue: T, outerIndex: number, innerIndex: number): void {
     this.emitValue();
   }
 

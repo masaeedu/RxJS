@@ -9,20 +9,15 @@ import {OuterSubscriber} from '../OuterSubscriber';
 import {subscribeToResult} from '../util/subscribeToResult';
 import {SymbolShim} from '../util/SymbolShim';
 
-export class ZipOperator<T, R> implements Operator<T, R> {
+export class ZipOperator<T, R> implements Operator<Observable<T>, R> {
+  constructor(private project?: (...values: T[]) => R) {  }
 
-  project: (...values: Array<any>) => R;
-
-  constructor(project?: (...values: Array<any>) => R) {
-    this.project = project;
-  }
-
-  call(subscriber: Subscriber<R>): Subscriber<T> {
-    return new ZipSubscriber(subscriber, this.project);
+  call(subscriber: Subscriber<R>): Subscriber<Observable<T>> {
+    return new ZipSubscriber<T, R>(subscriber, this.project);
   }
 }
 
-export class ZipSubscriber<T, R> extends Subscriber<T> {
+export class ZipSubscriber<T, R> extends Subscriber<Observable<T>> {
   private index = 0;
   private values: any;
   private project: (...values: Array<any>) => R;
@@ -30,7 +25,7 @@ export class ZipSubscriber<T, R> extends Subscriber<T> {
   private active = 0;
 
   constructor(destination: Subscriber<R>,
-              project?: (...values: Array<any>) => R,
+              project?: (...values: T[]) => R,
               values: any = Object.create(null)) {
     super(destination);
     this.project = (typeof project === 'function') ? project : null;
