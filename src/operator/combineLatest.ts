@@ -29,7 +29,7 @@ export function combineLatest<T, R>(...observables: Array<ObservableInput<any> |
 
   observables.unshift(this);
 
-  return new ArrayObservable(observables).lift<T, R>(new CombineLatestOperator<T, R>(project));
+  return new ArrayObservable(observables).lift<R>(new CombineLatestOperator<T, R>(project));
 }
 
 /* tslint:disable:max-line-length */
